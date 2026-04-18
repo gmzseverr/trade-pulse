@@ -22,6 +22,7 @@ const COLORS = [
   "var(--color-chart-3)",
   "var(--color-chart-4)",
   "var(--color-chart-5)",
+  "oklch(0.6 0.15 200) ",
 ]
 
 const chartConfig = {

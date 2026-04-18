@@ -6,80 +6,114 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from "@/components/ui/chart"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, Legend } from "recharts"
+import { 
+  Bar, 
+  CartesianGrid, 
+  XAxis, 
+  YAxis, 
+  Line, 
+  ComposedChart, // Karma grafik için ana bileşen
+  ResponsiveContainer 
+} from "recharts"
 
 interface DiscountImpact {
   discount_percent: string
-  order_count: number
+  units: number
   revenue: number
-  avg_order_value: number
+  transactions: number
 }
-
-const COLORS = [
-  "var(--color-chart-1)",
-  "var(--color-chart-3)",
-  "var(--color-chart-4)",
-  "var(--color-chart-5)",
-]
 
 const chartConfig = {
   revenue: {
-    label: "Revenue",
-    color: "var(--color-chart-1)",
+    label: "Total Revenue",
+    color: "#3b82f6",
   },
-  order_count: {
-    label: "Orders",
-    color: "var(--color-chart-2)",
+  transactions: {
+    label: "Transaction Count",
+    color: "#f97316",
   },
 } satisfies ChartConfig
 
 export function DiscountImpactChart({ data }: { data: DiscountImpact[] }) {
-  const chartData = data.map((item, index) => ({
-    tier: item.discount_percent,
-    revenue: Number(item.revenue),
-    orders: Number(item.order_count),
-    avgValue: Number(item.avg_order_value),
-    fill: COLORS[index % COLORS.length],
-  }))
+  const chartData = [...data]
+    .sort((a, b) => parseFloat(a.discount_percent) - parseFloat(b.discount_percent))
+    .map((item) => ({
+      tier: `%${Math.round(parseFloat(item.discount_percent))}`,
+      revenue: Number(item.revenue || 0),
+      transactions: Number(item.transactions || 0),
+    }))
 
   return (
     <Card className="bg-card/50 backdrop-blur">
       <CardHeader>
-        <CardTitle>Discount Impact</CardTitle>
-        <CardDescription>How discounts affect revenue and order volume</CardDescription>
+        <CardTitle className="text-xl font-bold">Discount Efficiency Analysis</CardTitle>
+        <CardDescription>Revenue (Bars) vs. Transaction Volume (Line)</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[350px] w-full">
-          <BarChart
+          {/* BarChart yerine ComposedChart kullanıyoruz */}
+          <ComposedChart
             data={chartData}
-            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            margin={{ top: 20, right: 20, left: 10, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#444" opacity={0.3} />
+            
             <XAxis
               dataKey="tier"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
+              tickMargin={12}
+              tick={{ fill: "#94a3b8", fontSize: 12 }}
             />
+            
+            {/* Sol Y Ekseni: Revenue için */}
             <YAxis
+              yAxisId="left"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              tick={{ fill: "#3b82f6", fontSize: 11 }}
             />
+
+            {/* Sağ Y Ekseni: Transactions için (Görünmez ama ölçek için şart) */}
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              hide // Değerler barların üstünde çok kalabalık yapmasın diye gizledik
+              domain={['auto', 'auto']}
+            />
+
             <ChartTooltip
-              cursor={{ fill: "var(--color-muted)", opacity: 0.3 }}
-              content={<ChartTooltipContent />}
+              cursor={{ fill: "rgba(255,255,255,0.05)" }}
+              content={<ChartTooltipContent indicator="line" />}
             />
-            <Bar dataKey="revenue" radius={[4, 4, 0, 0]}>
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} />
-              ))}
-            </Bar>
-          </BarChart>
+            
+            <ChartLegend content={<ChartLegendContent />} />
+            
+            {/* Ciro: Bar olarak */}
+            <Bar 
+              yAxisId="left"
+              dataKey="revenue" 
+              fill="#3b82f6" 
+              radius={[4, 4, 0, 0]} 
+              barSize={40}
+              opacity={0.8}
+            />
+            
+            {/* İşlem Sayısı: Çizgi olarak */}
+            <Line
+              yAxisId="right" 
+              type="monotone"
+              dataKey="transactions"
+              stroke="#f97316"
+              strokeWidth={3}
+              dot={{ r: 4, fill: "#f97316" }}
+              activeDot={{ r: 6, strokeWidth: 0 }}
+            />
+          </ComposedChart>
         </ChartContainer>
       </CardContent>
     </Card>

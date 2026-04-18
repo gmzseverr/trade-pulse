@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
@@ -7,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { ArrowRight, Link } from "lucide-react"
 
 interface DailyRevenue {
   order_date: string
@@ -23,7 +25,13 @@ export function RevenueTable({ data }: { data: DailyRevenue[] }) {
       <CardHeader>
         <CardTitle>Daily Revenue Breakdown</CardTitle>
         <CardDescription>Recent daily performance metrics</CardDescription>
+       <Button variant="ghost" size="sm" asChild className="hover:bg-primary/10 text-primary">
+          <Link href="/dashboard/orders" className="flex items-center gap-2">
+            View All <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
       </CardHeader>
+       
       <CardContent>
         <Table>
           <TableHeader>

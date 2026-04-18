@@ -10,6 +10,7 @@ import {
   CreditCard,
   Lightbulb,
   Activity,
+  ShoppingCart,
 } from "lucide-react"
 import {
   Sidebar,
@@ -34,6 +35,10 @@ const navItems = [
     title: "Revenue Analytics",
     href: "/dashboard/revenue",
     icon: DollarSign,
+  },{
+    title: "Order Analytics", 
+    href: "/dashboard/orders",
+    icon: ShoppingCart,
   },
   {
     title: "Product Analytics",
