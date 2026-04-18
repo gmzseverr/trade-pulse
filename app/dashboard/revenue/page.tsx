@@ -4,7 +4,8 @@ import { RevenueAreaChart } from "@/components/dashboard/revenue/revenue-area-ch
 import { RegionBarChart } from "@/components/dashboard/revenue/region-bar-chart"
 import { DiscountImpactChart } from "@/components/dashboard/revenue/discount-impact-chart"
 import { RevenueTable } from "@/components/dashboard/revenue/revenue-table"
-import { DollarSign, TrendingUp, Percent, Calendar } from "lucide-react"
+import { DollarSign, TrendingUp, Percent, Calendar, ShoppingCart } from "lucide-react"
+import { RegionPieChart } from "@/components/dashboard/revenue/region-pie-chart"
 
 export default async function RevenuePage() {
   const supabase = await createClient()
@@ -15,16 +16,19 @@ export default async function RevenuePage() {
     { data: regionRevenue },
     { data: discountImpact },
   ] = await Promise.all([
-    supabase.from("overview_stats").select("*").single(),
+    supabase.from("overview_stats").select("*").maybeSingle(),
     supabase.from("daily_revenue").select("*").order("order_date", { ascending: true }),
     supabase.from("region_revenue").select("*"),
     supabase.from("discount_impact").select("*"),
   ])
 
-  // Calculate additional metrics
+// SQL'den gelen gerçek kolon isimlerine göre güncelledik:
   const totalRevenue = Number(overviewStats?.total_revenue || 0)
-  const avgOrderValue = Number(overviewStats?.avg_order_value || 0)
   const totalOrders = Number(overviewStats?.total_orders || 0)
+  const totalUnits = Number(overviewStats?.total_units || 0) // units_sold değil, total_units!
+  
+  // avg_order_value veritabanında yoksa biz hesaplayalım:
+  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
   
   // Calculate revenue per day average
   const revenuePerDay = dailyRevenue?.length 
@@ -53,7 +57,7 @@ export default async function RevenuePage() {
     {
       title: "Orders",
       value: totalOrders.toLocaleString(),
-      icon: Percent,
+      icon:ShoppingCart,
       description: "Total transactions",
     },
   ]
@@ -86,7 +90,7 @@ export default async function RevenuePage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <RevenueAreaChart data={dailyRevenue || []} />
-        <RegionBarChart data={regionRevenue || []} />
+        <RegionPieChart data={regionRevenue || []} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

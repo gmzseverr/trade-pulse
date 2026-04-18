@@ -5,10 +5,16 @@ interface OverviewStats {
   total_revenue: number | null
   total_orders: number | null
   avg_order_value: number | null
-  unique_products: number | null
+  units_sold: number | null
 }
 
 export function KPICards({ stats }: { stats: OverviewStats | null }) {
+  
+  const avgOrderValue =
+  stats?.total_revenue && stats?.total_orders
+    ? stats.total_revenue / stats.total_orders
+    : 0
+
   const kpis = [
     {
       title: "Total Revenue",
@@ -28,25 +34,24 @@ export function KPICards({ stats }: { stats: OverviewStats | null }) {
       description: "Orders processed",
     },
     {
-      title: "Avg Order Value",
-      value: stats?.avg_order_value
-        ? `$${Number(stats.avg_order_value).toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}`
-        : "$0.00",
-      icon: TrendingUp,
-      description: "Per transaction",
-    },
-    {
-      title: "Unique Products",
-      value: stats?.unique_products?.toLocaleString() || "0",
-      icon: Package,
-      description: "Products sold",
-    },
+  title: "Avg Order Value",
+  value:   stats?.total_revenue && stats?.total_orders
+    ? stats.total_revenue / stats.total_orders
+    : 0,
+  icon: TrendingUp,
+  description: "Per transaction",
+},
+{
+  title: "Units Sold",
+  value: stats?.units_sold ? Number(stats.units_sold).toLocaleString() : "0",
+  icon: Package,
+  description: "Total items sold",
+},
   ]
 
+
   return (
+    
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {kpis.map((kpi) => (
         <Card key={kpi.title} className="bg-card/50 backdrop-blur">
@@ -62,6 +67,7 @@ export function KPICards({ stats }: { stats: OverviewStats | null }) {
           </CardContent>
         </Card>
       ))}
+      
     </div>
   )
 }

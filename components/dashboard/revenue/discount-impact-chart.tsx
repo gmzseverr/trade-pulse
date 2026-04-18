@@ -10,9 +10,9 @@ import {
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, Legend } from "recharts"
 
 interface DiscountImpact {
-  discount_tier: string
+  discount_percent: string
   order_count: number
-  total_revenue: number
+  revenue: number
   avg_order_value: number
 }
 
@@ -24,7 +24,7 @@ const COLORS = [
 ]
 
 const chartConfig = {
-  total_revenue: {
+  revenue: {
     label: "Revenue",
     color: "var(--color-chart-1)",
   },
@@ -36,8 +36,8 @@ const chartConfig = {
 
 export function DiscountImpactChart({ data }: { data: DiscountImpact[] }) {
   const chartData = data.map((item, index) => ({
-    tier: item.discount_tier,
-    revenue: Number(item.total_revenue),
+    tier: item.discount_percent,
+    revenue: Number(item.revenue),
     orders: Number(item.order_count),
     avgValue: Number(item.avg_order_value),
     fill: COLORS[index % COLORS.length],
