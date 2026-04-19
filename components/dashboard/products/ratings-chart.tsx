@@ -119,23 +119,7 @@ export function RatingsChart({ data }: { data: ProductPerformance[] }) {
           </ChartContainer>
         </div>
 
-        {/* Korelasyon Detay Alanı (Alt Liste) */}
-        <div className="space-y-2.5 pt-2 border-t border-border/40">
-          <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Satisfaction Details (Top 3)</h4>
-          {chartData.slice(0, 3).map((item, idx) => (
-            <div key={item.name} className="flex items-center justify-between text-[11px] bg-muted/20 p-3 rounded-xl border border-border/50 hover:bg-muted/30 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="size-2 rounded-full" style={{ backgroundColor: COLORS[idx] }} />
-                <span className="font-bold text-foreground">Product #{item.rawName}</span>
-                <span className="text-muted-foreground italic">{item.category}</span>
-              </div>
-              <Badge variant="secondary" className="h-6 gap-1.5 px-3 border border-primary/10 text-primary bg-primary/5 rounded-full font-black text-xs tracking-tight">
-                {item.rating} 
-                <Star className="size-3 fill-primary text-primary" />
-              </Badge>
-            </div>
-          ))}
-        </div>
+       
       </CardContent>
     </Card>
   )

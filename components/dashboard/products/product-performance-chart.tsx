@@ -43,11 +43,11 @@ export function ProductPerformanceChart({ data }: { data: ProductPerformance[] }
     .map((item, index) => ({
       product: `ID: ${item.product_id}`,
       revenue: Number(item.revenue),
-      fill: COLORS[index % COLORS.length], // Renkleri sırayla atıyoruz
+      fill: COLORS[index % COLORS.length], 
     }))
 
   return (
-    <Card className="bg-card/40 backdrop-blur-md border-none shadow-xl">
+    <Card className="bg-card/50 backdrop-blur">
       <CardHeader>
         <CardTitle className="text-xl font-bold tracking-tight">Top Products by Revenue</CardTitle>
         <CardDescription className="text-xs">Financial performance ranking</CardDescription>
