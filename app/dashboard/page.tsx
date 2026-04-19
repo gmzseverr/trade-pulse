@@ -1,11 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
-import { RevenueChart } from "@/components/dashboard/revenue-chart"
+import { RevenueAreaChart } from "@/components/dashboard/revenue-area-chart.tsx"
 import { RegionChart } from "@/components/dashboard/region-chart"
 import { CategoryChart } from "@/components/dashboard/category-chart"
 import { RecentOrders } from "@/components/dashboard/recent-orders"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DollarSign, ShoppingCart, TrendingUp, Calendar } from "lucide-react"
-import { RevenueAreaChart } from "@/components/dashboard/revenue/revenue-area-chart"
+
 
 export default async function DashboardPage() {
   const supabase = await createClient()

@@ -1,5 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button" 
+import { ArrowUpRight } from "lucide-react" 
+import Link from "next/link"
 
 interface Order {
   id: string
@@ -15,9 +18,20 @@ interface Order {
 export function RecentOrders({ orders }: { orders: Order[] }) {
   return (
     <Card className="bg-card/50 backdrop-blur">
-      <CardHeader>
-        <CardTitle>Recent Orders</CardTitle>
-        <CardDescription>Latest transactions across all regions</CardDescription>
+     <CardHeader className="flex flex-row items-center justify-between pb-4">
+        <div className="space-y-1">
+          <CardTitle>Recent Orders</CardTitle>
+          <CardDescription>
+            Latest transactions across all regions
+          </CardDescription>
+        </div>
+        
+        <Button variant="ghost" size="sm" asChild className="h-8 gap-1 text-xs font-bold hover:bg-primary/10 hover:text-primary transition-all">
+          <Link href="dashboard/orders">
+            View All
+            <ArrowUpRight className="size-3" />
+          </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

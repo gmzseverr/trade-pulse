@@ -31,11 +31,7 @@ const navItems = [
     href: "/dashboard",
     icon: LayoutDashboard,
   },
-  {
-    title: "Revenue Analytics",
-    href: "/dashboard/revenue",
-    icon: DollarSign,
-  },{
+ {
     title: "Order Analytics", 
     href: "/dashboard/orders",
     icon: ShoppingCart,

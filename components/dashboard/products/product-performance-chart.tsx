@@ -9,75 +9,86 @@ import {
 } from "@/components/ui/chart"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts"
 
+// JSON verindeki gerçek alanlara göre güncelledik
 interface ProductPerformance {
   product_id: string
   product_category: string
-  total_quantity: number
-  total_revenue: number
-  avg_rating: number | null
-  order_count: number
+  units_sold: number // JSON: units_sold
+  revenue: number    // JSON: revenue
+  avg_rating: string
+  review_volume: number
 }
 
+// 5+1 Renk Paletin (Aynen korunuyor)
 const COLORS = [
   "var(--color-chart-1)",
   "var(--color-chart-2)",
   "var(--color-chart-3)",
   "var(--color-chart-4)",
   "var(--color-chart-5)",
+  "oklch(0.6 0.15 200)", 
 ]
 
 const chartConfig = {
-  total_revenue: {
+  revenue: {
     label: "Revenue",
-    color: "var(--color-chart-1)",
   },
 } satisfies ChartConfig
 
 export function ProductPerformanceChart({ data }: { data: ProductPerformance[] }) {
-  const chartData = data.map((item, index) => ({
-    product: item.product_id,
-    revenue: Number(item.total_revenue),
-    fill: COLORS[index % COLORS.length],
-  }))
+  // Veriyi hazırlarken hem sıralıyoruz hem de anahtarları eşliyoruz
+  const chartData = [...data]
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 6) // En iyi 6 ürün
+    .map((item, index) => ({
+      product: `ID: ${item.product_id}`,
+      revenue: Number(item.revenue),
+      fill: COLORS[index % COLORS.length], // Renkleri sırayla atıyoruz
+    }))
 
   return (
-    <Card className="bg-card/50 backdrop-blur">
+    <Card className="bg-card/40 backdrop-blur-md border-none shadow-xl">
       <CardHeader>
-        <CardTitle>Top Products by Revenue</CardTitle>
-        <CardDescription>Best performing products</CardDescription>
+        <CardTitle className="text-xl font-bold tracking-tight">Top Products by Revenue</CardTitle>
+        <CardDescription className="text-xs">Financial performance ranking</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[350px] w-full">
           <BarChart
             data={chartData}
             layout="vertical"
-            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            margin={{ top: 10, right: 30, left: 10, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+            {/* Sadece dikey çizgiler kalsın: Daha modern durur */}
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" horizontal={false} />
+            
             <XAxis
               type="number"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-              tickFormatter={(value) => `$${value}`}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+              tickFormatter={(value) => `$${value.toLocaleString()}`}
             />
+            
             <YAxis
               dataKey="product"
               type="category"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+              tick={{ fill: "hsl(var(--foreground))", fontSize: 11, fontWeight: 600 }}
               width={80}
             />
+            
             <ChartTooltip
-              cursor={{ fill: "var(--color-muted)", opacity: 0.3 }}
-              content={<ChartTooltipContent />}
+              cursor={{ fill: "hsl(var(--muted))", opacity: 0.2 }}
+              content={<ChartTooltipContent hideLabel />}
             />
-            <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
+            
+            <Bar dataKey="revenue" radius={[0, 6, 6, 0]} barSize={25}>
               {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} />
+                <Cell key={`cell-${index}`} fill={entry.fill} fillOpacity={0.85} />
               ))}
             </Bar>
           </BarChart>

@@ -1,74 +1,118 @@
 "use client"
 
+import * as React from "react"
+import { Pie, PieChart, Cell, Legend, ResponsiveContainer, Sector } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 interface RegionRevenue {
-  region: string
+  customer_region: string
   revenue: number
-  orders: number
 }
 
+const COLORS = [
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+  "var(--color-chart-4)",
+  "var(--color-chart-5)",
+]
+
 const chartConfig = {
-  revenue: {
-    label: "Revenue",
-    color: "var(--color-chart-2)",
-  },
+  revenue: { label: "Revenue", color: "hsl(var(--primary))" },
 } satisfies ChartConfig
 
+const renderActiveShape = (props: any) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 8} 
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        cornerRadius={6} 
+      />
+    </g>
+  )
+}
+
 export function RegionChart({ data }: { data: RegionRevenue[] }) {
-  const chartData = data.map((item) => ({
-    region: item.region,
-    revenue: Number(item.revenue),
+  const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined)
+
+  const totalRevenue = React.useMemo(() => {
+    return data.reduce((sum, item) => sum + Number(item.revenue || 0), 0)
+  }, [data])
+
+  const chartData = data.map((item, index) => ({
+    name: item.customer_region,
+    value: Number(item.revenue || 0),
+    percentage: ((Number(item.revenue || 0) / totalRevenue) * 100).toFixed(1),
+    fill: COLORS[index % COLORS.length],
   }))
 
-  return (
+ return (
     <Card className="bg-card/50 backdrop-blur">
-      <CardHeader>
-        <CardTitle>Revenue by Region</CardTitle>
-        <CardDescription>Geographic distribution of sales</CardDescription>
+      <CardHeader className="items-start pb-0">
+        <CardTitle className="text-xl font-bold tracking-tight">Market Share</CardTitle>
+        <CardDescription>Revenue by Global Region</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
-          <BarChart
-            data={chartData}
-            layout="vertical"
-            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-            <XAxis
-              type="number"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-              tickFormatter={(value) => `$${value}`}
+      
+      <CardContent className="flex-1 pb-0 pt-4">
+        <ChartContainer config={chartConfig} className="h-[350px] w-full">
+          <PieChart>
+            <ChartTooltip 
+              cursor={false} 
+              content={<ChartTooltipContent hideLabel />} 
             />
-            <YAxis
-              dataKey="region"
-              type="category"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-              width={100}
+            
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={60}
+              outerRadius={100}
+              paddingAngle={2}
+           
+              activeIndex={activeIndex}
+              activeShape={renderActiveShape}
+              onMouseEnter={(_, index) => setActiveIndex(index)}
+              onMouseLeave={() => setActiveIndex(undefined)}
+              stroke="none"
+              label={false} 
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+              ))}
+            </Pie>
+
+            <Legend
+              verticalAlign="bottom"
+              align="center"
+              layout="horizontal"
+              iconType="circle"
+              content={({ payload }) => (
+                <div className="flex flex-wrap justify-center gap-x-4 gap-y-3 mt-8 px-2">
+                  {payload?.map((entry: any, index: number) => (
+                    <div key={`item-${index}`} className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-foreground leading-none">
+                          {entry.value}
+                        </span>
+                        <span className="text-xs text-muted-foreground uppercase font-medium">
+                          %{chartData[index].percentage} • ${Number(chartData[index].value / 1000).toFixed(1)}k
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             />
-            <ChartTooltip
-              cursor={{ fill: "var(--color-muted)", opacity: 0.3 }}
-              content={<ChartTooltipContent />}
-            />
-            <Bar
-              dataKey="revenue"
-              fill="var(--color-chart-2)"
-              radius={[0, 4, 4, 0]}
-            />
-          </BarChart>
+          </PieChart>
         </ChartContainer>
       </CardContent>
     </Card>

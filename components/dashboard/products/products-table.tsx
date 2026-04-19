@@ -13,9 +13,9 @@ import { Star } from "lucide-react"
 interface ProductPerformance {
   product_id: string
   product_category: string
-  total_quantity: number
+  quantity: number
   total_revenue: number
-  avg_rating: number | null
+  rating: number | null
   order_count: number
 }
 

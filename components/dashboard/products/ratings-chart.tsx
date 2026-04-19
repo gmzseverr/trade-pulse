@@ -1,82 +1,141 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-import { Scatter, ScatterChart, CartesianGrid, XAxis, YAxis, ZAxis } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, LabelList } from "recharts"
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Badge } from "@/components/ui/badge"
+import { Star, TrendingUp } from "lucide-react"
 
 interface ProductPerformance {
   product_id: string
   product_category: string
-  total_quantity: number
-  total_revenue: number
-  avg_rating: number | null
-  order_count: number
+  units_sold: number
+  revenue: number
+  avg_rating: string
+  review_volume: number
 }
 
+const COLORS = [
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+  "var(--color-chart-4)",
+  "var(--color-chart-5)",
+  "oklch(0.6 0.15 200)", // Senin ozel oklch rengin
+]
+
 const chartConfig = {
-  rating: {
-    label: "Rating",
-    color: "var(--color-chart-1)",
+  revenue: {
+    label: "Revenue",
+    color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig
 
 export function RatingsChart({ data }: { data: ProductPerformance[] }) {
-  const chartData = data
-    .filter((item) => item.avg_rating !== null)
+  // 1. Veriyi Temizle ve Sırala (En yüksek ciro en üste)
+  const chartData = [...data]
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 6) // Sadece Top 6 ürünü gösterelim, kalabalık olmasın
     .map((item) => ({
-      product: item.product_id,
-      revenue: Number(item.total_revenue),
-      rating: Number(item.avg_rating),
-      orders: Number(item.order_count),
+      name: `ID: ${item.product_id}`,
+      rawName: item.product_id,
+      revenue: item.revenue,
+      // String gelen rating'i sayıya çevirip tek ondalık yapıyoruz (Örn: 3.4)
+      rating: parseFloat(item.avg_rating).toFixed(1),
+      category: item.product_category,
     }))
+
+  // 2. Custom Label: Barın sonuna ciro rakamını şıkça yazmak için
+  const renderCustomizedLabel = (props: any) => {
+    const { x, y, width, height, value } = props;
+    const radius = 10;
+    return (
+      <text 
+        x={x + width + 10} 
+        y={y + height / 2} 
+        fill="hsl(var(--muted-foreground))" 
+        textAnchor="start" 
+        dominantBaseline="middle"
+        className="text-[11px] font-bold tracking-tight"
+      >
+        {`$${value.toLocaleString()}`}
+      </text>
+    );
+  };
 
   return (
     <Card className="bg-card/50 backdrop-blur">
-      <CardHeader>
-        <CardTitle>Revenue vs Rating</CardTitle>
-        <CardDescription>Correlation between product ratings and revenue</CardDescription>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl font-bold tracking-tight">Top Product Performance</CardTitle>
+          <TrendingUp className="size-5 text-emerald-500 animate-pulse" />
+        </div>
+        <CardDescription className="text-xs">
+          Ranked by total revenue with associated customer satisfaction score
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[350px] w-full">
-          <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-            <XAxis
-              dataKey="rating"
-              type="number"
-              domain={[3.5, 5]}
-              name="Rating"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-            />
-            <YAxis
-              dataKey="revenue"
-              type="number"
-              name="Revenue"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-              tickFormatter={(value) => `$${value}`}
-            />
-            <ZAxis dataKey="orders" range={[50, 400]} name="Orders" />
-            <ChartTooltip
-              cursor={{ strokeDasharray: "3 3" }}
-              content={<ChartTooltipContent />}
-            />
-            <Scatter
+      
+      <CardContent className="space-y-6">
+        {/* Grafik Alanı */}
+        <div className="h-[300px] w-full">
+          <ChartContainer config={chartConfig} className="h-full w-full">
+            <BarChart
               data={chartData}
-              fill="var(--color-chart-1)"
-              fillOpacity={0.6}
-            />
-          </ScatterChart>
-        </ChartContainer>
+              layout="vertical"
+              margin={{ left: -10, right: 60, top: 10, bottom: 10 }}
+              barCategoryGap="20%"
+            >
+              <CartesianGrid horizontal={false} strokeDasharray="3 3" className="stroke-muted/30" />
+              
+              {/* X Ekseni (Ciro) - Gizli tutuyoruz, rakamları barın sonuna yazacağız */}
+              <XAxis type="number" hide />
+              
+              {/* Y Ekseni (Ürün ID'leri) */}
+              <YAxis
+                dataKey="name"
+                type="category"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: 11, fontWeight: 700, fill: "hsl(var(--foreground))" }}
+                width={80}
+              />
+              
+              <ChartTooltip content={<ChartTooltipContent hideLabel />} cursor={{ fill: "transparent" }} />
+              
+              {/* Bar (Ciro Hacmi) */}
+              <Bar dataKey="revenue" radius={[0, 6, 6, 0]} barSize={28}>
+                {chartData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS[index % COLORS.length]} 
+                    fillOpacity={0.85} 
+                    className="transition-all hover:fill-opacity-100"
+                  />
+                ))}
+                {/* Barın sonundaki rakamlar */}
+                <LabelList dataKey="revenue" content={renderCustomizedLabel} />
+              </Bar>
+            </BarChart>
+          </ChartContainer>
+        </div>
+
+        {/* Korelasyon Detay Alanı (Alt Liste) */}
+        <div className="space-y-2.5 pt-2 border-t border-border/40">
+          <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Satisfaction Details (Top 3)</h4>
+          {chartData.slice(0, 3).map((item, idx) => (
+            <div key={item.name} className="flex items-center justify-between text-[11px] bg-muted/20 p-3 rounded-xl border border-border/50 hover:bg-muted/30 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="size-2 rounded-full" style={{ backgroundColor: COLORS[idx] }} />
+                <span className="font-bold text-foreground">Product #{item.rawName}</span>
+                <span className="text-muted-foreground italic">{item.category}</span>
+              </div>
+              <Badge variant="secondary" className="h-6 gap-1.5 px-3 border border-primary/10 text-primary bg-primary/5 rounded-full font-black text-xs tracking-tight">
+                {item.rating} 
+                <Star className="size-3 fill-primary text-primary" />
+              </Badge>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   )

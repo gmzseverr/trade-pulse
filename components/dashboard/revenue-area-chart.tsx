@@ -105,3 +105,4 @@ export function RevenueAreaChart({ data }: { data: DailyRevenue[] }) {
     </Card>
   )
 }
+export default RevenueAreaChart;

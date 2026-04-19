@@ -36,13 +36,12 @@ interface Order {
 
 export function OrdersTable({ data }: { data: Order[] }) {
   const [searchQuery, setSearchQuery] = React.useState("")
-  const [categoryFilter, setCategoryFilter] = React.useState("all")
-  const [regionFilter, setRegionFilter] = React.useState("all")
+  const [categoryFilter, setCategoryFilter] = React.useState("All")
+  const [regionFilter, setRegionFilter] = React.useState("All")
   const [sortConfig, setSortConfig] = React.useState<{ key: keyof Order; direction: 'asc' | 'desc' } | null>(null)
   const [currentPage, setCurrentPage] = React.useState(1)
   const itemsPerPage = 10
 
-  // 1. Dinamik Filtreleme Seçeneklerini Oluştur (Kategori & Bölge)
   const filters = React.useMemo(() => ({
     categories: ["All", ...Array.from(new Set(data.map(d => d.product_category).filter(Boolean)))],
     regions: ["All", ...Array.from(new Set(data.map(d => d.region).filter(Boolean)))]
@@ -198,7 +197,8 @@ export function OrdersTable({ data }: { data: Order[] }) {
                     <TableCell className="text-sm">
                       {row.order_date ? new Date(row.order_date).toLocaleDateString("en-US", { month: 'short', day: 'numeric' }) : "---"}
                     </TableCell>
-                    <TableCell><Badge variant="secondary" className="font-normal text-[10px]">{row.product_category || "Other"}</Badge></TableCell>
+                    <TableCell>                  <Badge variant="secondary" className="text-xs">
+{row.product_category || "Other"}</Badge></TableCell>
                     <TableCell className="text-right font-bold text-primary">${Number(row.revenue || 0).toLocaleString()}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{row.region || "Global"}</TableCell>
                     <TableCell className="text-center">
